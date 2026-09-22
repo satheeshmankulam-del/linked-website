@@ -14,4 +14,4 @@ Static site for the Linked Android app. No build step: Netlify serves these file
 
 ## Before publishing
 1. `assets/analytics.js`: paste your Clarity Project ID, or leave it empty.
-2. If your Netlify site name differs, find and replace `https://linked-app.netlify.app` in every file.
+2. If your Netlify site name differs, find and replace `https://linkedbookmark.netlify.app` in every file.

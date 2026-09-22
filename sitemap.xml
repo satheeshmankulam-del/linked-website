@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://linked-app.netlify.app/</loc><lastmod>2026-09-18</lastmod></url>
-  <url><loc>https://linked-app.netlify.app/faq/</loc><lastmod>2026-09-18</lastmod></url>
-  <url><loc>https://linked-app.netlify.app/support/</loc><lastmod>2026-09-18</lastmod></url>
-  <url><loc>https://linked-app.netlify.app/privacy/</loc><lastmod>2026-09-18</lastmod></url>
+  <url><loc>https://linkedbookmark.netlify.app/</loc><lastmod>2026-09-18</lastmod></url>
+  <url><loc>https://linkedbookmark.netlify.app/bookmark-app-without-account/</loc><lastmod>2026-09-18</lastmod></url>
+  <url><loc>https://linkedbookmark.netlify.app/faq/</loc><lastmod>2026-09-18</lastmod></url>
+  <url><loc>https://linkedbookmark.netlify.app/support/</loc><lastmod>2026-09-18</lastmod></url>
+  <url><loc>https://linkedbookmark.netlify.app/privacy/</loc><lastmod>2026-09-18</lastmod></url>
 </urlset>
