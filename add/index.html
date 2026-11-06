@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add to Linked — Send a link to your phone</title>
+<meta name="description" content="Paste a link on your computer and scan the QR code with Linked on your phone to save it instantly. No account, nothing stored." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+<!-- QR generator: battle-tested library (loads on the live site). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Local fallback encoder if the CDN is ever unreachable. -->
+<script src="qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#0B1120; --panel:#131C2E; --panel2:#1B263B; --border:rgba(148,163,184,.16);
+    --text:#F1F5F9; --text2:#94A3B8; --text3:#64748B; --accent:#2563EB; --accent2:#60A5FA;
+    --ok:#16A34A; --radius:18px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#F1F5F9; --panel:#FFFFFF; --panel2:#F8FAFC; --border:rgba(30,41,59,.1);
+      --text:#1E293B; --text2:#475569; --text3:#94A3B8;
+    }
+  }
+  *{margin:0;box-sizing:border-box;font-family:'Roboto',system-ui,sans-serif}
+  html,body{background:var(--bg);color:var(--text);min-height:100%}
+  body{display:flex;flex-direction:column;align-items:center;padding:40px 16px 60px}
+  .glow{position:fixed;top:-160px;right:-120px;width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle,rgba(37,99,235,.22),transparent 70%);z-index:0;pointer-events:none}
+  .wrap{position:relative;z-index:1;width:100%;max-width:560px}
+  .brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:26px}
+  .brand .logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#2563EB,#6366F1);
+    display:flex;align-items:center;justify-content:center}
+  .brand .logo svg{width:24px;height:24px}
+  .brand .name{font-size:26px;font-weight:900;letter-spacing:-.5px}
+  h1{font-size:30px;font-weight:900;text-align:center;line-height:1.15;letter-spacing:-.8px;margin-bottom:10px}
+  h1 .hl{background:linear-gradient(90deg,var(--accent2),#818CF8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{text-align:center;color:var(--text2);font-size:16px;line-height:1.5;max-width:460px;margin:0 auto 30px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:18px}
+  label{display:block;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+  .inrow{display:flex;gap:10px}
+  input[type=url],input[type=text]{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;
+    padding:15px 16px;font-size:15px;color:var(--text);outline:none;transition:border-color .15s}
+  input:focus{border-color:var(--accent)}
+  .btn{border:none;cursor:pointer;border-radius:12px;font-size:15px;font-weight:700;padding:15px 20px;
+    background:var(--accent);color:#fff;white-space:nowrap;transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn--ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+  .hint{font-size:13px;color:var(--text3);margin-top:12px;line-height:1.5}
+  /* QR result */
+  .qrzone{display:none;flex-direction:column;align-items:center;text-align:center;animation:fade .25s ease}
+  .qrzone.show{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .qrcard{background:#fff;padding:22px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.35);margin-bottom:18px}
+  #qrcode{display:flex}
+  #qrcode img, #qrcode canvas{display:block;border-radius:6px}
+  .qr-url{font-size:13px;color:var(--text2);word-break:break-all;max-width:420px;margin-bottom:6px;line-height:1.5}
+  .qr-title{font-size:18px;font-weight:700;margin-bottom:14px}
+  .steps{counter-reset:s;list-style:none;text-align:left;max-width:420px;margin:22px auto 0;padding:0}
+  .steps li{counter-increment:s;position:relative;padding:10px 0 10px 42px;font-size:14.5px;color:var(--text);line-height:1.5}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:8px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .cleaned{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ok);font-weight:600;margin-top:10px}
+  .foot{text-align:center;color:var(--text3);font-size:13px;line-height:1.6;margin-top:26px}
+  .foot a{color:var(--accent2);text-decoration:none}
+  .priv{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--border);
+    border-radius:100px;padding:8px 16px;font-size:13px;color:var(--text2);margin:0 auto 26px}
+  .priv svg{width:15px;height:15px;color:var(--ok)}
+  .center{display:flex;justify-content:center}
+  .err{color:#F87171;font-size:13px;margin-top:10px;display:none}
+  .err.show{display:block}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+    <div class="name">linked</div>
+  </div>
+
+  <h1>Send a link <span class="hl">to your phone</span></h1>
+  <p class="sub">Paste a link here on your computer, then scan the QR code with Linked on your phone. It saves straight into your bookmarks.</p>
+
+  <div class="center">
+    <div class="priv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      No account · Nothing is uploaded or stored
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="panel" id="inputPanel">
+    <label for="urlin">Paste a link</label>
+    <div class="inrow">
+      <input id="urlin" type="url" inputmode="url" placeholder="https://example.com/article" autofocus />
+      <button class="btn" id="makeBtn">Make QR</button>
+    </div>
+    <div class="err" id="err">Please paste a valid web link.</div>
+    <div class="hint">Tip: drag the <b>“＋ Add to Linked”</b> button below to your bookmarks bar, then click it on any page to come here with the link ready.
+      <a id="bmlet" href="#" style="color:var(--accent2);text-decoration:none;font-weight:700">＋ Add to Linked</a>
+    </div>
+  </div>
+
+  <!-- QR RESULT -->
+  <div class="qrzone" id="qrzone">
+    <div class="qrcard"><div id="qrcode"></div></div>
+    <div class="qr-title">Scan with Linked</div>
+    <div class="qr-url" id="qrurl"></div>
+    <div class="cleaned" id="cleaned" style="display:none">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Tracking junk removed — clean link
+    </div>
+    <ol class="steps">
+      <li>Open <b>Linked</b> on your phone.</li>
+      <li>Tap the <b>scan</b> button (above the ＋ on the dashboard).</li>
+      <li>Point your camera at this QR code — the link opens in the save screen.</li>
+    </ol>
+    <button class="btn btn--ghost" id="againBtn" style="margin-top:22px">Send another link</button>
+  </div>
+
+  <p class="foot">
+    Don’t have the app yet? <a href="https://play.google.com/store/apps/details?id=com.satheesh.linkvault" target="_blank" rel="noopener">Get Linked on Google Play</a><br/>
+    <a href="/">linkedbookmark.netlify.app</a> · <a href="/privacy/">Privacy</a>
+  </p>
+</div>
+
+<script>
+(function(){
+  var urlin = document.getElementById('urlin');
+  var makeBtn = document.getElementById('makeBtn');
+  var againBtn = document.getElementById('againBtn');
+  var qrzone = document.getElementById('qrzone');
+  var inputPanel = document.getElementById('inputPanel');
+  var qrurlEl = document.getElementById('qrurl');
+  var cleanedEl = document.getElementById('cleaned');
+  var errEl = document.getElementById('err');
+  var qrBox = document.getElementById('qrcode');
+  var qr = null;
+
+  // Strip common tracking params so the saved link is clean.
+  var JUNK = /^(utm_|fbclid$|gclid$|mc_|igsh$|igshid$|si$|ref$|ref_src$|spm$|trk$|trkCampaign$|originalSubdomain$|_branch_|yclid$|mkt_tok$)/i;
+  function cleanUrl(raw){
+    try{
+      var u = new URL(raw);
+      var removed = false;
+      var keep = new URLSearchParams();
+      u.searchParams.forEach(function(v,k){ if(JUNK.test(k)){ removed = true; } else { keep.append(k,v); } });
+      u.search = keep.toString() ? '?'+keep.toString() : '';
+      return { url: u.toString(), removed: removed };
+    }catch(e){ return { url: raw, removed:false }; }
+  }
+
+  function normalize(v){
+    v = (v||'').trim();
+    if(!v) return '';
+    if(!/^https?:\/\//i.test(v)) v = 'https://' + v.replace(/^\/+/,'');
+    return v;
+  }
+  function valid(v){
+    try{ var u=new URL(v); return (u.protocol==='http:'||u.protocol==='https:') && /\./.test(u.hostname); }catch(e){ return false; }
+  }
+
+  function makeQR(){
+    var v = normalize(urlin.value);
+    if(!valid(v)){ errEl.classList.add('show'); return; }
+    errEl.classList.remove('show');
+    var c = cleanUrl(v);
+    qrBox.innerHTML = '';
+    try {
+      if (typeof QRCode !== 'undefined') {
+        // Preferred: battle-tested library (present on the live site).
+        new QRCode(qrBox, {
+          text: c.url, width:260, height:260,
+          colorDark:"#0B1120", colorLight:"#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else if (typeof QRCodeLite !== 'undefined') {
+        // Fallback only if the CDN was unreachable.
+        QRCodeLite.render(qrBox, c.url, { size:260, dark:"#0B1120", light:"#ffffff", quiet:4 });
+      } else {
+        throw new Error('no-qr-lib');
+      }
+    } catch(e) {
+      errEl.textContent = "Couldn't make a QR code for that link. Try a shorter URL.";
+      errEl.classList.add('show'); return;
+    }
+    qrurlEl.textContent = c.url;
+    cleanedEl.style.display = c.removed ? 'inline-flex' : 'none';
+    inputPanel.style.display = 'none';
+    qrzone.classList.add('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function reset(){
+    qrzone.classList.remove('show');
+    inputPanel.style.display = '';
+    urlin.value = '';
+    urlin.focus();
+  }
+
+  makeBtn.addEventListener('click', makeQR);
+  urlin.addEventListener('keydown', function(e){ if(e.key==='Enter') makeQR(); });
+  againBtn.addEventListener('click', reset);
+
+  // Pre-fill from ?url= (used by the bookmarklet) and auto-generate.
+  try{
+    var q = new URLSearchParams(location.search).get('url');
+    if(q){ urlin.value = q; makeQR(); }
+  }catch(e){}
+
+  // Build the bookmarklet link.
+  try{
+    var base = location.origin + location.pathname;
+    var code = "javascript:(function(){window.open('"+base+"?url='+encodeURIComponent(location.href),'_blank');})();";
+    document.getElementById('bmlet').setAttribute('href', code);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
